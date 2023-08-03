@@ -18,7 +18,7 @@ const CONTRIBUTION_FULL_PROJECTION = mm => [
   "receipt",
   "isPhotoFee",
   "clientMutationId",
-  //`payer${mm.getProjection("payer.PayerPicker.projection")}`,
+  `payer${mm.getProjection("payer.PayerPicker.projection")}`,
   `policy${mm.getProjection("policy.PolicyPicker.projection")}`,
 ];
 
@@ -27,7 +27,7 @@ export function fetchPoliciesPremiums(mm, filters) {
         filters,
         [
             "id", "uuid", "payDate",
-            //`payer${mm.getProjection("payer.PayerPicker.projection")}`,
+            `payer${mm.getProjection("payer.PayerPicker.projection")}`,
             "amount", "payType", "receipt", "isPhotoFee"]
     );
     return graphql(payload, 'CONTRIBUTION_POLICES_PREMIUMS');
@@ -44,7 +44,7 @@ export function fetchContributionsSummaries(mm, filters) {
       "isPhotoFee",
       "clientMutationId",
       "validityTo",
-      //`payer${mm.getProjection("payer.PayerPicker.projection")}`,
+      `payer${mm.getProjection("payer.PayerPicker.projection")}`,
     ];
     const payload = formatPageQueryWithCount("premiums",
       filters,

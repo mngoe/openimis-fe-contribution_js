@@ -47,5 +47,10 @@
     "contribution.policy.name": "Policy name",
     "contribution.policy.value": "Policy value",
     "contribution.policy.startDate": "Start date",
-    "contribution.policy.expiryDate": "Expiry date"
+    "contribution.policy.expiryDate": "Expiry date",
+    "contribution.Contribution.operator": "Network operator",
+    "contribution.Contribution.paymentNumber": "Mobile Phone",
+    "contribution.Contribution.operator.O": "Orange Money",
+    "contribution.Contribution.operator.M": "MTN Mobile money",
+    "contribution.Contribution.operator.null": "Any"
 }

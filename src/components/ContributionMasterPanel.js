@@ -9,6 +9,7 @@ import {
     withModulesManager,
     AmountInput,
     TextInput,
+    NumberInput,
     PublishedComponent,
     FormPanel
 } from "@openimis/fe-core";
@@ -31,14 +32,14 @@ class ContributionMasterPanel extends FormPanel {
         } = this.props;
         return (
             <Fragment>
-                {!!edited && !!edited.policy && !!edited.policy.value  && (
+                {!!edited && !!edited.policy && !!edited.policy.value && (
                     <Grid container className={classes.item}>
                         <Grid item xs={3} className={classes.item}>
                             <TextInput
                                 module="contribution"
                                 label="contribution.policy.name"
                                 readOnly={true}
-                                value={(edited.policy.product && edited.policy.product.name)|| ""}
+                                value={(edited.policy.product && edited.policy.product.name) || ""}
                             />
                         </Grid>
                         <Grid item xs={3} className={classes.item}>
@@ -108,6 +109,32 @@ class ContributionMasterPanel extends FormPanel {
                             onChange={c => this.updateAttribute('payType', c)}
                         />
                     </Grid>
+                    {!!edited && edited.payType == 'M' && (
+                        <Grid item xs={3} className={classes.item}>
+                            <PublishedComponent
+                                pubRef="contribution.PremiumPaymentOperatorPicker"
+                                withNull={true}
+                                required
+                                readOnly={readOnly}
+                                value={!edited ? "" : edited.operator}
+                                onChange={c => this.updateAttribute('operator', c)}
+                            />
+                        </Grid>
+                    )
+                    }
+                    {!!edited && edited.payType == 'M' && (
+                        <Grid item xs={3} className={classes.item}>
+                            <NumberInput
+                                module="contribution"
+                                label="Contribution.paymentNumber"
+                                required
+                                readOnly={readOnly}
+                                value={!!edited && !!edited.paymentNumber ? edited.paymentNumber : ""}
+                                onChange={(v) => this.updateAttribute("paymentNumber", v)}
+                            />
+                        </Grid>
+                    )
+                    }
                     <Grid item xs={3} className={classes.item}>
                         <TextInput
                             module="contribution"

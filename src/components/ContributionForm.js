@@ -71,11 +71,11 @@ class ContributionForm extends Component {
         if (!prevProps.fetchedContribution && !!this.props.fetchedContribution) {
             const { contribution } = this.props;
             this.setState(
-            {
-                contribution,
-                contribution_uuid: contribution.uuid,
-                newContribution: false
-            });
+                {
+                    contribution,
+                    contribution_uuid: contribution.uuid,
+                    newContribution: false
+                });
         } else if (prevProps.contribution_uuid && !this.props.contribution_uuid) {
             this.setState({ contribution: this._newContribution(), newContribution: true, contribution_uuid: null });
         } else if (prevProps.submittingMutation && !this.props.submittingMutation) {
@@ -90,7 +90,7 @@ class ContributionForm extends Component {
         if (!prevProps.policySummary && !!this.props.policySummary) {
             this.setState(prevState => ({
                 contribution: {
-                    ... prevState.contribution,
+                    ...prevState.contribution,
                     policy: this.props.policySummary,
                 },
             }));
@@ -113,6 +113,7 @@ class ContributionForm extends Component {
             (contribution && (
                 !contribution.payDate ||
                 !contribution.payType ||
+                (contribution.payType == 'M' && (!contribution.operator || !contribution.paymentNumber)) ||
                 !contribution.amount ||
                 !contribution.receipt ||
                 !contribution.policy ||
@@ -139,7 +140,7 @@ class ContributionForm extends Component {
                     saveContribution: false,
                 }
             );
-            },
+        },
         );
     }
 
@@ -181,7 +182,7 @@ class ContributionForm extends Component {
             readOnly = false,
             save,
             back,
-         } = this.props;
+        } = this.props;
         const { contribution, saveContribution, newContribution, reset, update } = this.state;
         if (!rights.includes(RIGHT_CONTRIBUTION)) return null;
         let runningMutation = !!contribution && !!contribution.clientMutationId

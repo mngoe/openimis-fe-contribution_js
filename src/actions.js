@@ -1,10 +1,10 @@
 import {
-    graphql,
-    formatPageQuery,
-    formatPageQueryWithCount,
-    formatMutation,
-    formatJsonField,
-    formatGQLString,
+  graphql,
+  formatPageQuery,
+  formatPageQueryWithCount,
+  formatMutation,
+  formatJsonField,
+  formatGQLString,
 } from "@openimis/fe-core";
 import _ from "lodash";
 import _uuid from "lodash-uuid";
@@ -23,42 +23,42 @@ const CONTRIBUTION_FULL_PROJECTION = mm => [
 ];
 
 export function fetchPoliciesPremiums(mm, filters) {
-    let payload = formatPageQueryWithCount("premiumsByPolicies",
-        filters,
-        [
-            "id", "uuid", "payDate",
-            `payer${mm.getProjection("payer.PayerPicker.projection")}`,
-            "amount", "payType", "receipt", "isPhotoFee"]
-    );
-    return graphql(payload, 'CONTRIBUTION_POLICES_PREMIUMS');
+  let payload = formatPageQueryWithCount("premiumsByPolicies",
+    filters,
+    [
+      "id", "uuid", "payDate",
+      `payer${mm.getProjection("payer.PayerPicker.projection")}`,
+      "amount", "payType", "receipt", "isPhotoFee"]
+  );
+  return graphql(payload, 'CONTRIBUTION_POLICES_PREMIUMS');
 }
 
 export function fetchContributionsSummaries(mm, filters) {
-    let projections = [
-      "id",
-      "uuid",
-      "payDate",
-      "amount",
-      "payType",
-      "receipt",
-      "isPhotoFee",
-      "clientMutationId",
-      "validityTo",
-      `payer${mm.getProjection("payer.PayerPicker.projection")}`,
-    ];
-    const payload = formatPageQueryWithCount("premiums",
-      filters,
-      projections
-    );
-    return graphql(payload, 'CONTRIBUTION_CONTRIBUTIONS');
-  }
+  let projections = [
+    "id",
+    "uuid",
+    "payDate",
+    "amount",
+    "payType",
+    "receipt",
+    "isPhotoFee",
+    "clientMutationId",
+    "validityTo",
+    `payer${mm.getProjection("payer.PayerPicker.projection")}`,
+  ];
+  const payload = formatPageQueryWithCount("premiums",
+    filters,
+    projections
+  );
+  return graphql(payload, 'CONTRIBUTION_CONTRIBUTIONS');
+}
 
 
 export function selectPremium(premium) {
-    return dispatch => {
-      dispatch({ type: 'CONTRIBUTION_PREMIUM', payload: premium })
-    }
+  return dispatch => {
+    dispatch({ type: 'CONTRIBUTION_PREMIUM', payload: premium })
   }
+}
 
 export function formatContributionGQL(mm, contribution) {
   const req = `
@@ -70,6 +70,8 @@ export function formatContributionGQL(mm, contribution) {
     ${!!contribution.action ? `action: "${contribution.action}"` : ""}
     ${!!contribution.amount ? `amount: "${contribution.amount}"` : ""}
     ${!!contribution.payer ? `payerUuid: "${contribution.payer.uuid}"` : ""}
+    ${!!contribution.operator ? `operator: "${contribution.operator}"` : ""}
+    ${!!contribution.paymentNumber ? `paymentNumber: "${contribution.paymentNumber}"` : ""}
     ${!!contribution.jsonExt ? `jsonExt: ${formatJsonField(contribution.jsonExt)}` : ""}
     ${!!contribution.policy ? `policyUuid: "${formatGQLString(contribution.policy.uuid)}"` : ""}
   `
@@ -98,7 +100,7 @@ export function fetchContribution(
   let filters = []
   if (!!contributionUuid) {
     filters.push(`uuid: "${contributionUuid}"`)
-  } else if (!!clientMutationId){
+  } else if (!!clientMutationId) {
     filters.push(`clientMutationId: "${clientMutationId}"`)
   }
   const payload = formatPageQuery("premiums",
@@ -106,9 +108,9 @@ export function fetchContribution(
     CONTRIBUTION_FULL_PROJECTION(mm)
   );
   return graphql(payload, 'CONTRIBUTION_OVERVIEW',
-  {
-    clientMutationId: !contributionUuid && clientMutationId,
-  });
+    {
+      clientMutationId: !contributionUuid && clientMutationId,
+    });
 }
 
 export function newContribution() {

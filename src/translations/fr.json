@@ -1,0 +1,7 @@
+{
+    "contribution.Contribution.operator": "Opérateur télephonique",
+    "contribution.Contribution.paymentNumber": "Numéro de téléphone",
+    "contribution.Contribution.operator.O": "Orange Money",
+    "contribution.Contribution.operator.M": "MTN Mobile money",
+    "contribution.Contribution.operator.null": "Tout"
+}

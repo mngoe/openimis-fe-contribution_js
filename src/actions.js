@@ -72,6 +72,8 @@ export function formatContributionGQL(mm, contribution) {
     ${!!contribution.payer ? `payerUuid: "${contribution.payer.uuid}"` : ""}
     ${!!contribution.jsonExt ? `jsonExt: ${formatJsonField(contribution.jsonExt)}` : ""}
     ${!!contribution.policy ? `policyUuid: "${formatGQLString(contribution.policy.uuid)}"` : ""}
+    ${!!contribution.operator ? `operator: "${contribution.operator}"` : ""}
+    ${!!contribution.paymentNumber ? `paymentNumber: "${contribution.paymentNumber}"` : ""}
   `
   return req;
 }

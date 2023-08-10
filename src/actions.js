@@ -70,8 +70,6 @@ export function formatContributionGQL(mm, contribution) {
     ${!!contribution.action ? `action: "${contribution.action}"` : ""}
     ${!!contribution.amount ? `amount: "${contribution.amount}"` : ""}
     ${!!contribution.payer ? `payerUuid: "${contribution.payer.uuid}"` : ""}
-    ${!!contribution.operator ? `operator: "${contribution.operator}"` : ""}
-    ${!!contribution.paymentNumber ? `paymentNumber: "${contribution.paymentNumber}"` : ""}
     ${!!contribution.jsonExt ? `jsonExt: ${formatJsonField(contribution.jsonExt)}` : ""}
     ${!!contribution.policy ? `policyUuid: "${formatGQLString(contribution.policy.uuid)}"` : ""}
   `

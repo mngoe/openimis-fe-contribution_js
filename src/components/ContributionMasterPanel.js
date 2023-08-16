@@ -13,6 +13,7 @@ import {
     PublishedComponent,
     FormPanel
 } from "@openimis/fe-core";
+import { PaymentMobile } from "@openimis/fe-payment-cmr";
 
 
 const styles = theme => ({
@@ -110,29 +111,10 @@ class ContributionMasterPanel extends FormPanel {
                         />
                     </Grid>
                     {!!edited && edited.payType == 'M' && (
-                        <Grid item xs={3} className={classes.item}>
-                            <PublishedComponent
-                                pubRef="contribution.PremiumPaymentOperatorPicker"
-                                withNull={true}
-                                required
-                                readOnly={readOnly}
-                                value={!edited ? "" : edited.operator}
-                                onChange={c => this.updateAttribute('operator', c)}
-                            />
-                        </Grid>
-                    )
-                    }
-                    {!!edited && edited.payType == 'M' && (
-                        <Grid item xs={3} className={classes.item}>
-                            <NumberInput
-                                module="contribution"
-                                label="Contribution.paymentNumber"
-                                required
-                                readOnly={readOnly}
-                                value={!!edited && !!edited.paymentNumber ? edited.paymentNumber : ""}
-                                onChange={(v) => this.updateAttribute("paymentNumber", v)}
-                            />
-                        </Grid>
+                        <PaymentMobile
+                            required
+                            readOnly={readOnly}
+                        />
                     )
                     }
                     <Grid item xs={3} className={classes.item}>

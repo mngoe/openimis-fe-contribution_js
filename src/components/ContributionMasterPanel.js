@@ -9,11 +9,10 @@ import {
     withModulesManager,
     AmountInput,
     TextInput,
-    NumberInput,
     PublishedComponent,
     FormPanel
 } from "@openimis/fe-core";
-import { PaymentMobile } from "@openimis/fe-payment-cmr";
+import { PaymentMobile } from "@openimis/fe-payment-cmr"
 
 
 const styles = theme => ({
@@ -112,8 +111,11 @@ class ContributionMasterPanel extends FormPanel {
                     </Grid>
                     {!!edited && edited.payType == 'M' && (
                         <PaymentMobile
-                            required
+                            {...this.props}
                             readOnly={readOnly}
+                            required
+                            updateAttribute={this.updateAttribute}
+                            edited={edited}
                         />
                     )
                     }

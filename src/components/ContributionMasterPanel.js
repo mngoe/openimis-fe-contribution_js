@@ -12,7 +12,7 @@ import {
     PublishedComponent,
     FormPanel
 } from "@openimis/fe-core";
-import { PaymentMobile } from "@openimis/fe-payment-cmr"
+import { PaymentMobile } from "@openimis/fe-contribution-cameroun"
 
 
 const styles = theme => ({

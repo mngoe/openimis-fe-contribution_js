@@ -9,10 +9,10 @@ import {
     withModulesManager,
     AmountInput,
     TextInput,
+    NumberInput,
     PublishedComponent,
     FormPanel
 } from "@openimis/fe-core";
-import { PaymentMobile } from "@openimis/fe-contribution-cameroun"
 
 
 const styles = theme => ({
@@ -109,16 +109,6 @@ class ContributionMasterPanel extends FormPanel {
                             onChange={c => this.updateAttribute('payType', c)}
                         />
                     </Grid>
-                    {!!edited && edited.payType == 'M' && (
-                        <PaymentMobile
-                            {...this.props}
-                            readOnly={readOnly}
-                            required
-                            updateAttribute={this.updateAttribute}
-                            edited={edited}
-                        />
-                    )
-                    }
                     <Grid item xs={3} className={classes.item}>
                         <TextInput
                             module="contribution"

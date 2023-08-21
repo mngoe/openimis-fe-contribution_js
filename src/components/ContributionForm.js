@@ -113,7 +113,7 @@ class ContributionForm extends Component {
             (contribution && (
                 !contribution.payDate ||
                 !contribution.payType ||
-                (contribution.payType == 'M' && (!contribution.operator || !contribution.paymentNumber)) ||
+                (contribution.payType == 'M' && (!contribution.networkOperator || !contribution.paymentNumber)) ||
                 !contribution.amount ||
                 !contribution.receipt ||
                 !contribution.policy ||

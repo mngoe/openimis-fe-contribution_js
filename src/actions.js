@@ -20,6 +20,8 @@ const CONTRIBUTION_FULL_PROJECTION = mm => [
   "clientMutationId",
   `payer${mm.getProjection("payer.PayerPicker.projection")}`,
   `policy${mm.getProjection("policy.PolicyPicker.projection")}`,
+  "networkOperator",
+  "paymentNumber"
 ];
 
 export function fetchPoliciesPremiums(mm, filters) {
@@ -72,6 +74,8 @@ export function formatContributionGQL(mm, contribution) {
     ${!!contribution.payer ? `payerUuid: "${contribution.payer.uuid}"` : ""}
     ${!!contribution.jsonExt ? `jsonExt: ${formatJsonField(contribution.jsonExt)}` : ""}
     ${!!contribution.policy ? `policyUuid: "${formatGQLString(contribution.policy.uuid)}"` : ""}
+    ${!!contribution.networkOperator ? `networkOperator: "${contribution.networkOperator}"` : ""}
+    ${!!contribution.paymentNumber ? `paymentNumber: "${contribution.paymentNumber}"` : ""}
   `
   return req;
 }

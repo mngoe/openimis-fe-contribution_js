@@ -113,7 +113,7 @@ class ContributionFilter extends Component {
                             </Grid>
                         </Grid>
                     } />
-                    <ControlledField module="contribution" id="ContributionFilter.payer" field={
+                    {/* <ControlledField module="contribution" id="ContributionFilter.payer" field={
                         <Grid item xs={4} className={classes.item}>
                             <PublishedComponent
                                 pubRef="payer.PayerPicker"
@@ -128,7 +128,7 @@ class ContributionFilter extends Component {
                                 ])}
                             />
                         </Grid>
-                    } />
+                    } /> */}
                     {["amount_Gte", "amount_Lte"].map(a => (
                         <ControlledField module="contribution" id="ContributionFilter.amountUnder" key={a} field={
                             <Grid item xs={2} className={classes.item}>

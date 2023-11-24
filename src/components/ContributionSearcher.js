@@ -69,7 +69,6 @@ class ContributionSearcher extends Component {
     headers = (filters) => {
         var h = [
             "contribution.payDate",
-            "contribution.payer",
             "contribution.amount",
             "contribution.payType",
             "contribution.receipt",
@@ -82,7 +81,6 @@ class ContributionSearcher extends Component {
     sorts = (filters) => {
         var results = [
             ['payDate', true],
-            ['payer', true],
             ['amount', true],
             ['payType', true],
             ['receipt', true],
@@ -116,7 +114,6 @@ class ContributionSearcher extends Component {
     itemFormatters = () => {
         const formatters =  [
             c => formatDateFromISO(this.props.modulesManager, this.props.intl, c.payDate),
-            c => c.payer?.name ?? "",
             c => formatAmount(this.props.intl, c.amount),
             c => <PublishedComponent
                 readOnly={true}

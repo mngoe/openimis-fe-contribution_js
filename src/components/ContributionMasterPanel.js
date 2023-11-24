@@ -80,7 +80,7 @@ class ContributionMasterPanel extends FormPanel {
                             onChange={c => this.updateAttribute('payDate', c)}
                         />
                     </Grid>
-                    <Grid item xs={3} className={classes.item}>
+                    {/* <Grid item xs={3} className={classes.item}>
                         <PublishedComponent
                             pubRef="payer.PayerPicker"
                             withNull={true}
@@ -88,7 +88,7 @@ class ContributionMasterPanel extends FormPanel {
                             value={!edited ? "" : edited.payer}
                             onChange={p => this.updateAttribute('payer', p)}
                         />
-                    </Grid>
+                    </Grid> */}
                     <Grid item xs={3} className={classes.item}>
                         <AmountInput
                             module="contribution"

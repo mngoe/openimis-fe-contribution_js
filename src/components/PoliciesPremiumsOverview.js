@@ -202,10 +202,10 @@ class PoliciesPremiumsOverview extends PagedDataHandler {
             pageInfo,
             readOnly,
             policy,
-            rights,
+            rights, 
             fetchingPoliciesPremiums,
         } = this.props;
-        if (!family.uuid) return null;
+        if (!family.uuid ||(!!family.familyType && family.familyType.code == 'P')) return null;
         const canAdd = rights.includes(RIGHT_CONTRIBUTION_ADD);
         let actions = [
             {

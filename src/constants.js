@@ -6,3 +6,4 @@ export const RIGHT_CONTRIBUTION_DELETE = 101304
 
 export const PREMIUM_PAYMENT_TYPES = ["C", "B", "M"];
 export const PREMIUM_CATEGORIES = ["contribution", "photoFee"];
+export const INSUREE_FAMILY_ROUTE_REF = "insuree.route.familyOverview";

@@ -1,26 +1,35 @@
-import React, { Fragment } from "react";
+import React from "react";
+import { connect } from "react-redux";
+import { injectIntl } from "react-intl";
+
 import { withTheme, withStyles } from "@material-ui/core/styles";
-import { injectIntl } from 'react-intl';
+import { Grid } from "@material-ui/core";
+
 import {
-    Grid,
-} from "@material-ui/core";
-import {
-    withHistory,
-    withModulesManager,
-    AmountInput,
-    TextInput,
+  withHistory,
+  withModulesManager,
+  AmountInput,
+  TextInput,
     NumberInput,
-    PublishedComponent,
-    FormPanel
+  ValidatedTextInput,
+  PublishedComponent,
+  formatMessageWithValues,
+  formatMessage,
+  FormPanel,
+  WarningBox,
 } from "@openimis/fe-core";
+import {
+  validateReceipt,
+  clearReceiptValidation,
+  setReceiptValid,
+} from "../actions";
 
-
-const styles = theme => ({
-    tableTitle: theme.table.title,
-    item: theme.paper.item,
-    fullHeight: {
-        height: "100%"
-    },
+const styles = (theme) => ({
+  tableTitle: theme.table.title,
+  item: theme.paper.item,
+  fullHeight: {
+    height: "100%",
+  },
 });
 
 class ContributionMasterPanel extends FormPanel {
@@ -31,7 +40,7 @@ class ContributionMasterPanel extends FormPanel {
             readOnly,
         } = this.props;
         return (
-            <Fragment>
+            <>
                 {!!edited && !!edited.policy && !!edited.policy.value && (
                     <Grid container className={classes.item}>
                         <Grid item xs={3} className={classes.item}>
@@ -131,11 +140,10 @@ class ContributionMasterPanel extends FormPanel {
                         />
                     </Grid>
                 </Grid>
-            </Fragment>
+            </>
         );
     }
 }
-
 export default withModulesManager(withHistory(injectIntl(withTheme(
     withStyles(styles)(ContributionMasterPanel)
 ))));

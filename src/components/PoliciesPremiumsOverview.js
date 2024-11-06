@@ -24,6 +24,7 @@ import DeleteContributionDialog from "./DeleteContributionDialog";
 import {
     RIGHT_CONTRIBUTION_DELETE,
     RIGHT_CONTRIBUTION_ADD,
+    FAMILY_TYPE_POLYGAMY_CODE,
 } from "../constants";
 
 const styles = theme => ({
@@ -202,10 +203,11 @@ class PoliciesPremiumsOverview extends PagedDataHandler {
             pageInfo,
             readOnly,
             policy,
+            edited,
             rights, 
             fetchingPoliciesPremiums,
         } = this.props;
-        if (!family.uuid ||(!!family.familyType && family.familyType.code == 'P')) return null;
+        if (!family.uuid ||(!!family.familyType && family.familyType.code == FAMILY_TYPE_POLYGAMY_CODE) || (!!edited && !!edited.familyType && edited.familyType.code == FAMILY_TYPE_POLYGAMY_CODE )) return null;
         const canAdd = rights.includes(RIGHT_CONTRIBUTION_ADD);
         let actions = [
             {

@@ -1,5 +1,6 @@
 import {
   graphql,
+  graphqlWithVariables,
   formatPageQuery,
   formatPageQueryWithCount,
   formatMutation,
@@ -7,9 +8,8 @@ import {
   formatGQLString,
 } from "@openimis/fe-core";
 import _ from "lodash";
-import _uuid from "lodash-uuid";
 
-const CONTRIBUTION_FULL_PROJECTION = mm => [
+const CONTRIBUTION_FULL_PROJECTION = (mm) => [
   "id",
   "uuid",
   "payDate",
@@ -17,20 +17,43 @@ const CONTRIBUTION_FULL_PROJECTION = mm => [
   "payType",
   "receipt",
   "isPhotoFee",
+  "otherPremiums",
+  "validityTo",
   "clientMutationId",
   `payer${mm.getProjection("payer.PayerPicker.projection")}`,
-  `policy${mm.getProjection("policy.PolicyPicker.projection")}`,
+  `policy${mm.getProjection("policy.PolicyPicker.projection.withFamily")}`,
 ];
 
 export function fetchPoliciesPremiums(mm, filters) {
-  let payload = formatPageQueryWithCount("premiumsByPolicies",
-    filters,
-    [
-      "id", "uuid", "payDate",
-      `payer${mm.getProjection("payer.PayerPicker.projection")}`,
-      "amount", "payType", "receipt", "isPhotoFee"]
-  );
-  return graphql(payload, 'CONTRIBUTION_POLICES_PREMIUMS');
+  let payload = formatPageQueryWithCount("premiumsByPolicies", filters, [
+    "id",
+    "uuid",
+    "payDate",
+    `payer${mm.getProjection("payer.PayerPicker.projection")}`,
+    "amount",
+    "payType",
+    "receipt",
+    "isPhotoFee",
+  ]);
+  return graphql(payload, "CONTRIBUTION_POLICES_PREMIUMS");
+}
+
+export function fetchPoliciesPremiums2(mm, policyUuid) {
+  let filters = [];
+  if (!!policyUuid) {
+    filters.push(`uuid: "${policyUuid}"`);
+  }
+  let payload = formatPageQueryWithCount("premiumsByPolicies", filters, [
+    "id",
+    "uuid",
+    "payDate",
+    `payer${mm.getProjection("payer.PayerPicker.projection")}`,
+    "amount",
+    "payType",
+    "receipt",
+    "isPhotoFee",
+  ]);
+  return graphql(payload, "CONTRIBUTION_POLICES_PREMIUMS");
 }
 
 export function fetchContributionsSummaries(mm, filters) {
@@ -46,119 +69,182 @@ export function fetchContributionsSummaries(mm, filters) {
     "validityTo",
     `payer${mm.getProjection("payer.PayerPicker.projection")}`,
   ];
-  const payload = formatPageQueryWithCount("premiums",
-    filters,
-    projections
-  );
-  return graphql(payload, 'CONTRIBUTION_CONTRIBUTIONS');
+  const payload = formatPageQueryWithCount("premiums", filters, projections);
+  return graphql(payload, "CONTRIBUTION_CONTRIBUTIONS");
 }
 
-
 export function selectPremium(premium) {
-  return dispatch => {
-    dispatch({ type: 'CONTRIBUTION_PREMIUM', payload: premium })
-  }
+  return (dispatch) => {
+    dispatch({ type: "CONTRIBUTION_PREMIUM", payload: premium });
+  };
 }
 
 export function formatContributionGQL(mm, contribution) {
   const req = `
-    ${contribution.uuid !== undefined && contribution.uuid !== null ? `uuid: "${contribution.uuid}"` : ''}
-    ${!!contribution.receipt ? `receipt: "${formatGQLString(contribution.receipt)}"` : ""}
+    ${
+      contribution.uuid !== undefined && contribution.uuid !== null
+        ? `uuid: "${contribution.uuid}"`
+        : ""
+    }
+    ${
+      !!contribution.receipt
+        ? `receipt: "${formatGQLString(contribution.receipt)}"`
+        : ""
+    }
     ${!!contribution.payDate ? `payDate: "${contribution.payDate}"` : ""}
     ${!!contribution.payType ? `payType: "${contribution.payType}"` : ""}
     ${`isPhotoFee: ${contribution.isPhotoFee}`}
     ${!!contribution.action ? `action: "${contribution.action}"` : ""}
     ${!!contribution.amount ? `amount: "${contribution.amount}"` : ""}
     ${!!contribution.payer ? `payerUuid: "${contribution.payer.uuid}"` : ""}
-    ${!!contribution.jsonExt ? `jsonExt: ${formatJsonField(contribution.jsonExt)}` : ""}
-    ${!!contribution.policy ? `policyUuid: "${formatGQLString(contribution.policy.uuid)}"` : ""}
-  `
+    ${
+      !!contribution.jsonExt
+        ? `jsonExt: ${formatJsonField(contribution.jsonExt)}`
+        : ""
+    }
+    ${
+      !!contribution.policy
+        ? `policyUuid: "${formatGQLString(contribution.policy.uuid)}"`
+        : ""
+    }
+  `;
   return req;
 }
-export function fetchPolicySummary(
-  mm,
-  policyUuid,
-) {
-  let filters = []
+export function fetchPolicySummary(mm, policyUuid) {
+  let filters = [];
   if (!!policyUuid) {
-    filters.push(`uuid: "${policyUuid}"`)
+    filters.push(`uuid: "${policyUuid}"`);
   }
-  const payload = formatPageQuery("policies",
-    filters,
-    ["id", "uuid", "startDate", "product{name}", "expiryDate", "value"],
-  );
-  return graphql(payload, 'CONTRIBUTION_POLICY_SUMMARY');
+  const payload = formatPageQuery("policies", filters, [
+    "id",
+    "uuid",
+    "startDate",
+    "product{name, code, maxInstallments}",
+    "expiryDate",
+    "value",
+    "sumPremiums",
+  ]);
+  return graphql(payload, "CONTRIBUTION_POLICY_SUMMARY");
 }
 
-export function fetchContribution(
-  mm,
-  contributionUuid,
-  clientMutationId
-) {
-  let filters = []
+export function fetchContribution(mm, contributionUuid, clientMutationId) {
+  let filters = [];
   if (!!contributionUuid) {
-    filters.push(`uuid: "${contributionUuid}"`)
-  } else if (!!clientMutationId) {
-    filters.push(`clientMutationId: "${clientMutationId}"`)
+    filters.push(`uuid: "${contributionUuid}"`);
+  } else if (!!clientMutationId)  {
+    filters.push(`clientMutationId: "${clientMutationId}"`);
   }
-  const payload = formatPageQuery("premiums",
+  const payload = formatPageQuery(
+    "premiums",
     filters,
     CONTRIBUTION_FULL_PROJECTION(mm)
   );
-  return graphql(payload, 'CONTRIBUTION_OVERVIEW',
-    {
-      clientMutationId: !contributionUuid && clientMutationId,
-    });
+  return graphql(payload, "CONTRIBUTION_OVERVIEW", {
+    clientMutationId: !contributionUuid && clientMutationId,
+  });
 }
 
 export function newContribution() {
-  return dispatch => {
-    dispatch({ type: 'CONTRIBUTION_NEW' })
-  }
+  return (dispatch) => {
+    dispatch({ type: "CONTRIBUTION_NEW" });
+  };
 }
 
 export function createContribution(mm, contribution, clientMutationLabel) {
-  let mutation = formatMutation("createPremium", formatContributionGQL(mm, contribution), clientMutationLabel);
+  let mutation = formatMutation(
+    "createPremium",
+    formatContributionGQL(mm, contribution),
+    clientMutationLabel
+  );
   var requestedDateTime = new Date();
   return graphql(
     mutation.payload,
-    ['CONTRIBUTION_MUTATION_REQ', 'CONTRIBUTION_CREATE_RESP', 'CONTRIBUTION_MUTATION_ERR'],
+    [
+      "CONTRIBUTION_MUTATION_REQ",
+      "CONTRIBUTION_CREATE_RESP",
+      "CONTRIBUTION_MUTATION_ERR",
+    ],
     {
       clientMutationId: mutation.clientMutationId,
       clientMutationLabel,
-      requestedDateTime
+      requestedDateTime,
     }
-  )
+  );
 }
 
 export function updateContribution(mm, contribution, clientMutationLabel) {
-  let mutation = formatMutation("updatePremium", formatContributionGQL(mm, contribution), clientMutationLabel);
+  let mutation = formatMutation(
+    "updatePremium",
+    formatContributionGQL(mm, contribution),
+    clientMutationLabel
+  );
   var requestedDateTime = new Date();
   return graphql(
     mutation.payload,
-    ['CONTRIBUTION_MUTATION_REQ', 'CONTRIBUTION_UPDATE_RESP', 'CONTRIBUTION_MUTATION_ERR'],
+    [
+      "CONTRIBUTION_MUTATION_REQ",
+      "CONTRIBUTION_UPDATE_RESP",
+      "CONTRIBUTION_MUTATION_ERR",
+    ],
     {
       clientMutationId: mutation.clientMutationId,
       clientMutationLabel,
       requestedDateTime,
       contributionUuid: contribution.uuid,
     }
-  )
+  );
 }
 
-
 export function deleteContribution(mm, contribution, clientMutationLabel) {
-  let mutation = formatMutation("deletePremium", `uuids: ["${contribution.uuid}"]`, clientMutationLabel);
+  let mutation = formatMutation(
+    "deletePremium",
+    `uuids: ["${contribution.uuid}"]`,
+    clientMutationLabel
+  );
   contribution.clientMutationId = mutation.clientMutationId;
   var requestedDateTime = new Date();
   return graphql(
     mutation.payload,
-    ['CONTRIBUTION_MUTATION_REQ', 'CONTRIBUTION_DELETE_RESP', 'CONTRIBUTION_MUTATION_ERR'],
+    [
+      "CONTRIBUTION_MUTATION_REQ",
+      "CONTRIBUTION_DELETE_RESP",
+      "CONTRIBUTION_MUTATION_ERR",
+    ],
     {
       clientMutationId: mutation.clientMutationId,
       clientMutationLabel,
       requestedDateTime,
       contributionUuid: contribution.uuid,
     }
-  )
+  );
+}
+
+export function clearContribution() {
+  return (dispatch) => {
+    dispatch({ type: `CONTRIBUTION_OVERVIEW_CLEAR` });
+  };
+}
+
+export function validateReceipt(mm, variables) {
+  return graphqlWithVariables(
+    `
+    query ($code: String!, $policyUuid: String!) {
+      isValid: validatePremiumCode(code: $code, policyUuid: $policyUuid)
+    }
+    `,
+    variables,
+    `CONTRIBUTION_FIELDS_VALIDATION`
+  );
+}
+
+export function setReceiptValid(mm) {
+  return (dispatch) => {
+    dispatch({ type: `CONTRIBUTION_FIELDS_VALIDATION_SET_VALID` });
+  };
+}
+
+export function clearReceiptValidation(mm) {
+  return (dispatch) => {
+    dispatch({ type: `CONTRIBUTION_FIELDS_VALIDATION_CLEAR` });
+  };
 }

@@ -22,6 +22,7 @@ const FAMILY_SEARCHER_CONTRIBUTION_KEY = "contribution.ContributionSearcher";
 class ContributionSearcher extends Component {
 
     state = {
+        searchInitiated: false,
         deleteContribution: null,
         reset: 0,
     }
@@ -137,6 +138,12 @@ class ContributionSearcher extends Component {
 
     rowDisabled = (selection, i) => !!i.validityTo
     rowLocked = (selection, i) => !!i.clientMutationId
+    onFiltersApplied = (filters) => {
+        this.setState({
+          searchInitiated: true,
+          filters, // Update the active filters
+        });
+      };
 
     render() {
         const { intl,
@@ -144,6 +151,8 @@ class ContributionSearcher extends Component {
             filterPaneContributionsKey, cacheFiltersKey, onDoubleClick
         } = this.props;
         let count = contributionsPageInfo.totalCount;
+        const { searchInitiated } = this.state;
+        
         return (
             <Fragment>
                 <DeleteContributionDialog
@@ -164,7 +173,7 @@ class ContributionSearcher extends Component {
                     tableTitle={formatMessageWithValues(intl, "contribution", "contributionSummaries", { count })}
                     rowsPerPageOptions={this.rowsPerPageOptions}
                     defaultPageSize={this.defaultPageSize}
-                    fetch={this.fetch}
+                    fetch={searchInitiated ? this.fetch : () => {}}
                     rowIdentifier={this.rowIdentifier}
                     filtersToQueryParams={this.filtersToQueryParams}
                     defaultOrderBy="-payDate"
@@ -175,6 +184,7 @@ class ContributionSearcher extends Component {
                     rowLocked={this.rowLocked}
                     onDoubleClick={c => !c.clientMutationId && onDoubleClick(c)}
                     reset={this.state.reset}
+                    onChangeFilters={this.onFiltersApplied}
                 />
             </Fragment>
         )

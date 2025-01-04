@@ -25,6 +25,7 @@ class ContributionSearcher extends Component {
         searchInitiated: false,
         deleteContribution: null,
         reset: 0,
+        initialFitlers: this.props.defaultFilters,
     }
 
     constructor(props) {
@@ -34,11 +35,21 @@ class ContributionSearcher extends Component {
         this.locationLevels = 4;
     }
 
+    componentDidMount() {
+        this.scheduleCanFetchContributionDetails();
+      }
+
     componentDidUpdate(prevProps) {
         if (prevProps.submittingMutation && !this.props.submittingMutation) {
             this.props.journalize(this.props.mutation);
             this.setState({ reset: this.state.reset + 1 });
         }
+        if (
+            prevState.searchInitiated !== this.state.searchInitiated ||
+            prevState.initialFitlers !== this.state.initialFitlers
+          ) {
+            this.scheduleCanFetchContributionDetails();
+          }
     }
 
     fetch = (prms) => {
@@ -47,6 +58,23 @@ class ContributionSearcher extends Component {
             prms
         )
     }
+
+    canFetchContributionDetails = () => {
+        if (this.state.searchInitiated === false && !!this.state.initialFitlers) {
+          this.onFiltersApplied(this.state.initialFitlers);
+        }
+      };
+    
+      scheduleCanFetchContributionDetails = () => {
+        if (this.debounceTimeout) {
+          clearTimeout(this.debounceTimeout);
+        }
+    
+        this.debounceTimeout = setTimeout(() => {
+          this.canFetchContributionDetails();
+        }, 100);
+      };
+    
 
     rowIdentifier = (r) => r.uuid
 

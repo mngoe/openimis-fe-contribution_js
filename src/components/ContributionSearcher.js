@@ -38,7 +38,7 @@ class ContributionSearcher extends Component {
     this.canFetchContribution = this.props.modulesManager.getConf(
       "fe-contribution",
       "canFetchContribution",
-      true
+      false
     );
   }
 
@@ -227,7 +227,6 @@ class ContributionSearcher extends Component {
     } = this.props;
     let count = contributionsPageInfo.totalCount;
     const { searchInitiated } = this.state;
-    console.log("this . canFetchContribution", this.canFetchContribution)
 
     return (
       <Fragment>

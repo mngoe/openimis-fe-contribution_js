@@ -35,9 +35,9 @@ class ContributionSearcher extends Component {
     this.rowsPerPageOptions = [10, 20, 50, 100];
     this.defaultPageSize = 10;
     this.locationLevels = 4;
-    this.canFetchContribution = this.props.modulesManager.getConf(
+    this.isDefaultFetchContributionActivated = this.props.modulesManager.getConf(
       "fe-contribution",
-      "canFetchContribution",
+      "isDefaultFetchContributionActivated",
       false
     );
   }
@@ -254,7 +254,7 @@ class ContributionSearcher extends Component {
           )}
           rowsPerPageOptions={this.rowsPerPageOptions}
           defaultPageSize={this.defaultPageSize}
-          fetch={this.canFetchContribution == true && searchInitiated ? this.fetch : this.canFetchContribution == false ? this.fetch : () => {}}
+          fetch={this.isDefaultFetchContributionActivated == false  && searchInitiated ? this.fetch : this.isDefaultFetchContributionActivated == true ? this.fetch : () => {}}
           rowIdentifier={this.rowIdentifier}
           filtersToQueryParams={this.filtersToQueryParams}
           defaultOrderBy="-payDate"

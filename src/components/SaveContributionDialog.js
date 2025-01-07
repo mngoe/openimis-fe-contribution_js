@@ -19,12 +19,15 @@ import {
 import { FormattedMessage } from "@openimis/fe-core";
 
 const SaveContributionDialog = ({
-    classes, contribution, onCancel, onConfirm
+    classes, contribution, onCancel, onConfirm, installmentsNumber
 }) => {
     if (!contribution.policy || !contribution.policy.value) return null;
     const [step, setStep] = useState(1);
-    const amount = parseInt(contribution.amount, 10);
+    const sumPremiums = parseInt(contribution.policy.sumPremiums || 0, 10);
+    const amount = parseInt(contribution.amount, 10) + sumPremiums;
     const policyValue = parseInt(contribution.policy.value, 10);
+    const max_installments = contribution?.policy?.product?.maxInstallments;
+
     return (
         <Dialog
             open={!!contribution}
@@ -64,24 +67,24 @@ const SaveContributionDialog = ({
                     )
                 }
                 {
-                    amount >= policyValue && (
+                    amount === policyValue && (
                         <DialogContentText>
                             {
-                                amount === policyValue && (
-                                    <FormattedMessage
-                                        module="contribution"
-                                        id="saveContributionDialog.messageEqual"
-                                    />
-                                )
+                                <FormattedMessage
+                                    module="contribution"
+                                    id="saveContributionDialog.messageEqual"
+                                />
                             }
-                            {
-                                amount > policyValue && (
-                                    <FormattedMessage
-                                        module="contribution"
-                                        id="saveContributionDialog.messageHigher"
-                                    />
-                                )
-                            }
+                        </DialogContentText>
+                    )
+                }
+                {
+                    installmentsNumber >= max_installments && max_installments !== null && (
+                        <DialogContentText>
+                            <FormattedMessage
+                                module="contribution"
+                                id="contribution.saveContributionDialog.maxINstallments.message"
+                            />
                         </DialogContentText>
                     )
                 }
@@ -89,7 +92,7 @@ const SaveContributionDialog = ({
             <DialogActions>
 
                 {
-                    amount >= policyValue && (
+                    amount === policyValue && (
                         <Button onClick={e => onConfirm()} className={classes.primaryButton} autoFocus>
                             <FormattedMessage module="contribution" id="saveContributionDialog.ok.button" />
                         </Button>
@@ -124,7 +127,7 @@ const SaveContributionDialog = ({
                 {
                     step === 1 && (
                         <Button onClick={onCancel} className={classes.secondaryButton} >
-                            <FormattedMessage module="core" id="cancel"/>
+                            <FormattedMessage module="core" id="cancel" />
                         </Button>
                     )
                 }

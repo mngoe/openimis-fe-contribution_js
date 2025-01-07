@@ -36,4 +36,4 @@ None
 * `state.insuree`, loading insuree policies (,eligibility,...)
 
 ## Configurations Options
-None
+- `isDefaultFetchContributionActivated`, manage default fetch behavior of contribution searcher ; default: true

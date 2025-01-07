@@ -44,7 +44,7 @@ class ContributionSearcher extends Component {
         this.scheduleCanFetchContributionDetails();
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps, prevState) {
         if (prevProps.submittingMutation && !this.props.submittingMutation) {
             this.props.journalize(this.props.mutation);
             this.setState({ reset: this.state.reset + 1 });

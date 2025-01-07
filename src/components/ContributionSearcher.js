@@ -36,7 +36,7 @@ class ContributionSearcher extends Component {
         this.isDefaultFetchContributionActivated = this.props.modulesManager.getConf(
             "fe-contribution",
             "isDefaultFetchContributionActivated",
-            false
+            true
           );
     }
 

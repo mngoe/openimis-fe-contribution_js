@@ -25,6 +25,7 @@ class ContributionSearcher extends Component {
         searchInitiated: false,
         deleteContribution: null,
         reset: 0,
+        initialFitlers: this.props.defaultFilters,
     }
 
     constructor(props) {
@@ -32,12 +33,27 @@ class ContributionSearcher extends Component {
         this.rowsPerPageOptions = [10, 20, 50, 100];
         this.defaultPageSize = 10;
         this.locationLevels = 4;
+        this.isDefaultFetchContributionActivated = this.props.modulesManager.getConf(
+            "fe-contribution",
+            "isDefaultFetchContributionActivated",
+            true
+          );
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidMount() {
+        this.scheduleCanFetchContributionDetails();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
         if (prevProps.submittingMutation && !this.props.submittingMutation) {
             this.props.journalize(this.props.mutation);
             this.setState({ reset: this.state.reset + 1 });
+        }
+        if (
+            prevState.searchInitiated !== this.state.searchInitiated ||
+            prevState.initialFitlers !== this.state.initialFitlers
+          ) {
+            this.scheduleCanFetchContributionDetails();
         }
     }
 
@@ -47,6 +63,22 @@ class ContributionSearcher extends Component {
             prms
         )
     }
+
+    canFetchContributionDetails = () => {
+        if (this.state.searchInitiated === false && !!this.state.initialFitlers) {
+          this.onFiltersApplied(this.state.initialFitlers);
+        }
+      };
+    
+      scheduleCanFetchContributionDetails = () => {
+        if (this.debounceTimeout) {
+          clearTimeout(this.debounceTimeout);
+        }
+    
+        this.debounceTimeout = setTimeout(() => {
+          this.canFetchContributionDetails();
+        }, 100);
+      };
 
     rowIdentifier = (r) => r.uuid
 
@@ -172,7 +204,7 @@ class ContributionSearcher extends Component {
                     tableTitle={formatMessageWithValues(intl, "contribution", "contributionSummaries", { count })}
                     rowsPerPageOptions={this.rowsPerPageOptions}
                     defaultPageSize={this.defaultPageSize}
-                    fetch={searchInitiated ? this.fetch : () => {}}
+                    fetch={this.isDefaultFetchContributionActivated == false  && searchInitiated ? this.fetch : this.isDefaultFetchContributionActivated == true ? this.fetch : () => {}}
                     rowIdentifier={this.rowIdentifier}
                     filtersToQueryParams={this.filtersToQueryParams}
                     defaultOrderBy="-payDate"

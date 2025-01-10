@@ -5,12 +5,12 @@ import { bindActionCreators } from "redux";
 import { withTheme, withStyles } from "@material-ui/core/styles";
 import ReplayIcon from "@material-ui/icons/Replay"
 import {
-    formatMessageWithValues, withModulesManager, withHistory,
+    formatMessageWithValues, formatMessage, withModulesManager, withHistory,
     Form, ProgressOrError, journalize, coreConfirm, Helmet
 } from "@openimis/fe-core";
 import { RIGHT_CONTRIBUTION } from "../constants";
 
-import { fetchContribution, newContribution, createContribution, fetchPolicySummary } from "../actions";
+import { fetchContribution, newContribution, createContribution, fetchPolicySummary, suspendPolicy } from "../actions";
 import ContributionMasterPanel from "./ContributionMasterPanel";
 import SaveContributionDialog from "./SaveContributionDialog";
 
@@ -31,6 +31,7 @@ class ContributionForm extends Component {
         contribution: this._newContribution(),
         newContribution: true,
         saveContribution: false,
+        familyPolicies: []
     }
 
     componentDidMount() {
@@ -40,8 +41,14 @@ class ContributionForm extends Component {
             modulesManager,
             fetchContribution,
             fetchPolicySummary,
+            policies
         } = this.props;
-
+        if(policies.length != 0){
+            let pol = policies.edges.map((p)=> p.node);
+            this.setState({
+                familyPolicies: pol
+            })
+        }
         if (contribution_uuid) {
             this.setState(
                 (state, props) => (
@@ -95,6 +102,10 @@ class ContributionForm extends Component {
                 },
             }));
         }
+
+        if (!prevProps.confirmed && this.props.confirmed) {
+            this.state.confirmedAction && this.state.confirmedAction();
+        }
     }
 
 
@@ -122,10 +133,64 @@ class ContributionForm extends Component {
     }
 
     confirmSave = () => {
-        this.setState(
-            { saveContribution: true },
-        );
+        let previousPolicy = null;
+        let policies = this.state.familyPolicies;
+        let contribution = this.state.contribution;
+        for (let i = 0; i < policies.length; i++){
+            if(!!policies[i].product.program && 
+                (policies[i].product.program.nameProgram == "Cheque Santé" || 
+                    policies[i].product.program.nameProgram == "Chèque Santé") &&
+                    policies[i].status == 2 && Math.round(contribution.policy.value) == Math.round(contribution.amount)){
+                    previousPolicy = this.state.familyPolicies[i];
+                }
+        }
+        console.log(previousPolicy)
+        if(previousPolicy != null){
+            this.setState({
+                saveContribution: false
+              })
+            this.confirmActivePolicy(previousPolicy)
+        }else{
+            this.setState(
+                { saveContribution: true },
+            );
+        }
+        
     }
+
+    confirmActivePolicy = (previousPolicy) => {
+        let confirmedAction = () => {
+            this.props.suspendPolicy(this.props.modulesManager, previousPolicy, formatMessageWithValues(
+                this.props.intl,
+                "policy",
+                "SuspendPolicy.mutationLabel",
+                {
+                    policy: previousPolicy.uuid
+                }
+            ));
+    
+            this.setState(prevState => {
+                const { contribution } = prevState;
+                this.props.save(contribution);
+                return (
+                    {
+                        saveContribution: false,
+                    }
+                );
+            },);
+        }
+    
+        let confirm = e => {
+          this.props.coreConfirm(
+            formatMessage(this.props.intl, "policy", "confirmActivePolicy.title"),
+            formatMessageWithValues(this.props.intl, "policy","confirmActivePolicy.message",{label: previousPolicy.product.name,}),
+          );
+        }
+        this.setState(
+          { confirmedAction },
+          confirm
+        )
+      }
 
     _save = (action) => {
         this.setState(prevState => {
@@ -238,6 +303,7 @@ const mapStateToProps = (state, props) => ({
     mutation: state.contribution.mutation,
     contribution: state.contribution.contribution,
     confirmed: state.core.confirmed,
+    policies: !!state.insuree && !!state.insuree.family ? state.insuree.family.policies : [],
     state: state,
 })
 
@@ -247,6 +313,7 @@ const mapDispatchToProps = dispatch => {
         fetchPolicySummary,
         newContribution,
         createContribution,
+        suspendPolicy,
         journalize,
         coreConfirm,
     }, dispatch);

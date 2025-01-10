@@ -41,9 +41,10 @@ class ContributionForm extends Component {
             modulesManager,
             fetchContribution,
             fetchPolicySummary,
-            policies
+            policies,
+            state
         } = this.props;
-        console.log(policies);
+        console.log(state);
         if(policies.length != 0){
             let pol = policies.map((p)=> p.node);
             this.setState({

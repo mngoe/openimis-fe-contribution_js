@@ -303,7 +303,7 @@ const mapStateToProps = (state, props) => ({
     mutation: state.contribution.mutation,
     contribution: state.contribution.contribution,
     confirmed: state.core.confirmed,
-    policies: !!state.insuree && !!state.insuree.family && !!state.insuree.family.policies && !!state.insuree.family.policies.edges ? state.insuree.family.policies.edges : [],
+    policies: !!state.insuree && !!state.insuree.family && !!state.insuree.family.policies ? state.insuree.family.policies.edges : [],
     state: state,
 })
 

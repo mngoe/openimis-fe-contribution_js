@@ -44,7 +44,7 @@ class ContributionForm extends Component {
             policies
         } = this.props;
         if(policies.length != 0){
-            let pol = policies.edges.map((p)=> p.node);
+            let pol = policies.map((p)=> p.node);
             this.setState({
                 familyPolicies: pol
             })
@@ -144,7 +144,6 @@ class ContributionForm extends Component {
                     previousPolicy = this.state.familyPolicies[i];
                 }
         }
-        console.log(previousPolicy)
         if(previousPolicy != null){
             this.setState({
                 saveContribution: false
@@ -303,7 +302,7 @@ const mapStateToProps = (state, props) => ({
     mutation: state.contribution.mutation,
     contribution: state.contribution.contribution,
     confirmed: state.core.confirmed,
-    policies: !!state.insuree && !!state.insuree.family ? state.insuree.family.policies : [],
+    policies: !!state.insuree && !!state.insuree.family ? state.insuree.family.policies.edges : [],
     state: state,
 })
 

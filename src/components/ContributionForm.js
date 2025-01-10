@@ -142,7 +142,7 @@ class ContributionForm extends Component {
                 if(!!policies[i].product.program && 
                     (policies[i].product.program.nameProgram == "Cheque Santé" || 
                         policies[i].product.program.nameProgram == "Chèque Santé") &&
-                        policies[i].status == 2 && Math.round(contribution.policy.value) == Math.round(contribution.amount)){
+                        policies[i].status === 2 && Math.round(contribution.policy.value) == Math.round(contribution.amount)){
                         previousPolicy = this.state.familyPolicies[i];
                     }
             }

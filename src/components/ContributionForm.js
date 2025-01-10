@@ -133,28 +133,36 @@ class ContributionForm extends Component {
     }
 
     confirmSave = () => {
-        let previousPolicy = null;
-        let policies = this.state.familyPolicies;
         let contribution = this.state.contribution;
-        for (let i = 0; i < policies.length; i++){
-            if(!!policies[i].product.program && 
-                (policies[i].product.program.nameProgram == "Cheque Santé" || 
-                    policies[i].product.program.nameProgram == "Chèque Santé") &&
-                    policies[i].status == 2 && Math.round(contribution.policy.value) == Math.round(contribution.amount)){
-                    previousPolicy = this.state.familyPolicies[i];
-                }
-        }
-        if(previousPolicy != null){
-            this.setState({
-                saveContribution: false
-              })
-            this.confirmActivePolicy(previousPolicy)
+        if(!!contribution.policy && 
+            (contribution.policy.product.program.nameProgram == "Cheque Santé" || contribution.policy.product.program.nameProgram == "Chèque Santé")){
+            let previousPolicy = null;
+            let policies = this.state.familyPolicies;
+            for (let i = 0; i < policies.length; i++){
+                if(!!policies[i].product.program && 
+                    (policies[i].product.program.nameProgram == "Cheque Santé" || 
+                        policies[i].product.program.nameProgram == "Chèque Santé") &&
+                        policies[i].status == 2 && Math.round(contribution.policy.value) == Math.round(contribution.amount)){
+                        previousPolicy = this.state.familyPolicies[i];
+                    }
+            }
+            if(previousPolicy != null){
+                const { update } = this.state;
+                this.setState({
+                    saveContribution: false,
+                    update: !update
+                  })
+                this.confirmActivePolicy(previousPolicy)
+            }else{
+                this.setState(
+                    { saveContribution: true },
+                );
+            }
         }else{
             this.setState(
                 { saveContribution: true },
             );
         }
-        
     }
 
     confirmActivePolicy = (previousPolicy) => {

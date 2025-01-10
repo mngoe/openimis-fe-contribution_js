@@ -85,7 +85,7 @@ export function fetchPolicySummary(
   }
   const payload = formatPageQuery("policies",
     filters,
-    ["id", "uuid", "startDate", "product{name}", "expiryDate", "value"],
+    ["id", "uuid", "startDate", "product{name program{nameProgram}}", "expiryDate", "value"],
   );
   return graphql(payload, 'CONTRIBUTION_POLICY_SUMMARY');
 }

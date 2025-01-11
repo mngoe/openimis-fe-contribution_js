@@ -102,10 +102,6 @@ class ContributionForm extends Component {
                 },
             }));
         }
-
-        if (!prevProps.confirmed && this.props.confirmed) {
-            this.state.confirmedAction && this.state.confirmedAction();
-        }
     }
 
 

@@ -85,9 +85,32 @@ export function fetchPolicySummary(
   }
   const payload = formatPageQuery("policies",
     filters,
-    ["id", "uuid", "startDate", "product{name}", "expiryDate", "value"],
+    ["id", "uuid", "startDate", "product{name program{nameProgram}}", "expiryDate", "value"],
   );
   return graphql(payload, 'CONTRIBUTION_POLICY_SUMMARY');
+}
+
+export function suspendPolicy(mm, policy, clientMutationLabel) {
+  let mutation = formatMutation(
+    "suspendPolicies",
+    `uuids: ["${policy.uuid}"]`,
+    clientMutationLabel
+  );
+  var requestedDateTime = new Date();
+  policy.clientMutationId = mutation.clientMutationId;
+  return graphql(
+    mutation.payload,
+    [
+      "POLICY_MUTATION_REQ",
+      "POLICY_SUSPEND_POLICIES_RESP",
+      "POLICY_MUTATION_ERR",
+    ],
+    {
+      clientMutationId: mutation.clientMutationId,
+      clientMutationLabel,
+      requestedDateTime,
+    }
+  );
 }
 
 export function fetchContribution(

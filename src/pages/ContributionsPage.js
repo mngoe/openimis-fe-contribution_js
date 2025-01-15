@@ -13,6 +13,13 @@ const styles = theme => ({
 
 
 class ContributionsPage extends Component {
+    constructor(props) {
+        super(props);
+        let defaultFilters = {};
+        this.state = {
+          defaultFilters,
+        };
+      }
 
     constructor(props) {
         super(props);

@@ -1,16 +1,19 @@
-
 import React, { Component, Fragment } from "react";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
-import { injectIntl } from 'react-intl';
-import {  IconButton, Tooltip } from "@material-ui/core";
+import { injectIntl } from "react-intl";
+import { IconButton, Tooltip } from "@material-ui/core";
+import { Tab as TabIcon, Delete as DeleteIcon } from "@material-ui/icons";
+import ContributionFilter from "./ContributionFilter";
 import {
-   Tab as TabIcon, Delete as DeleteIcon
-} from '@material-ui/icons';
-import ContributionFilter from './ContributionFilter';
-import {
-    withModulesManager, formatMessageWithValues, formatDateFromISO, formatMessage,
-    Searcher, PublishedComponent, formatAmount, journalize,
+  withModulesManager,
+  formatMessageWithValues,
+  formatDateFromISO,
+  formatMessage,
+  Searcher,
+  PublishedComponent,
+  formatAmount,
+  journalize,
 } from "@openimis/fe-core";
 
 import { fetchContributionsSummaries, deleteContribution } from "../actions";
@@ -20,224 +23,276 @@ import DeleteContributionDialog from "./DeleteContributionDialog";
 const FAMILY_SEARCHER_CONTRIBUTION_KEY = "contribution.ContributionSearcher";
 
 class ContributionSearcher extends Component {
+  state = {
+    searchInitiated: false,
+    deleteContribution: null,
+    reset: 0,
+    initialFitlers: this.props.defaultFilters,
+  };
 
-    state = {
-        searchInitiated: false,
-        deleteContribution: null,
-        reset: 0,
-        initialFitlers: this.props.defaultFilters,
+  constructor(props) {
+    super(props);
+    this.rowsPerPageOptions = [10, 20, 50, 100];
+    this.defaultPageSize = 10;
+    this.locationLevels = 4;
+    this.isDefaultFetchContributionActivated = this.props.modulesManager.getConf(
+      "fe-contribution",
+      "isDefaultFetchContributionActivated",
+      true
+    );
+  }
+
+  componentDidMount() {
+    this.scheduleCanFetchContributionDetails();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.submittingMutation && !this.props.submittingMutation) {
+      this.props.journalize(this.props.mutation);
+      this.setState({ reset: this.state.reset + 1 });
+    }
+    if (
+      prevState.searchInitiated !== this.state.searchInitiated ||
+      prevState.initialFitlers !== this.state.initialFitlers
+    ) {
+      this.scheduleCanFetchContributionDetails();
+    }
+  }
+
+  fetch = (prms) => {
+    this.props.fetchContributionsSummaries(this.props.modulesManager, prms);
+  };
+
+  canFetchContributionDetails = () => {
+    if (this.state.searchInitiated === false && !!this.state.initialFitlers) {
+      this.onFiltersApplied(this.state.initialFitlers);
+    }
+  };
+
+  scheduleCanFetchContributionDetails = () => {
+    if (this.debounceTimeout) {
+      clearTimeout(this.debounceTimeout);
     }
 
-    constructor(props) {
-        super(props);
-        this.rowsPerPageOptions = [10, 20, 50, 100];
-        this.defaultPageSize = 10;
-        this.locationLevels = 4;
-        this.isDefaultFetchContributionActivated = this.props.modulesManager.getConf(
-            "fe-contribution",
-            "isDefaultFetchContributionActivated",
-            true
-          );
-    }
+    this.debounceTimeout = setTimeout(() => {
+      this.canFetchContributionDetails();
+    }, 100);
+  };
 
-    componentDidMount() {
-        this.scheduleCanFetchContributionDetails();
-    }
+  rowIdentifier = (r) => r.uuid;
 
-    componentDidUpdate(prevProps, prevState) {
-        if (prevProps.submittingMutation && !this.props.submittingMutation) {
-            this.props.journalize(this.props.mutation);
-            this.setState({ reset: this.state.reset + 1 });
-        }
-        if (
-            prevState.searchInitiated !== this.state.searchInitiated ||
-            prevState.initialFitlers !== this.state.initialFitlers
-          ) {
-            this.scheduleCanFetchContributionDetails();
-        }
+  filtersToQueryParams = (state) => {
+    let prms = Object.keys(state.filters)
+      .filter((contrib) => !!state.filters[contrib]["filter"])
+      .map((contrib) => state.filters[contrib]["filter"]);
+    prms.push(`first: ${state.pageSize}`);
+    if (!!state.afterCursor) {
+      prms.push(`after: "${state.afterCursor}"`);
     }
+    if (!!state.beforeCursor) {
+      prms.push(`before: "${state.beforeCursor}"`);
+    }
+    if (!!state.orderBy) {
+      prms.push(`orderBy: ["${state.orderBy}"]`);
+    }
+    return prms;
+  };
 
-    fetch = (prms) => {
-        this.props.fetchContributionsSummaries(
-            this.props.modulesManager,
-            prms
+  headers = (filters) => {
+    var h = [
+      "contribution.payDate",
+      "contribution.amount",
+      "contribution.payType",
+      "contribution.receipt",
+      "contribution.category",
+      "contribution.openNewTabHead",
+    ];
+    return h;
+  };
+
+  sorts = (filters) => {
+    var results = [
+      ["payDate", true],
+      ["amount", true],
+      ["payType", true],
+      ["receipt", true],
+      ["isPhotoFee", true],
+    ];
+    return results;
+  };
+
+  deleteContribution = () => {
+    let contribution = this.state.deleteContribution;
+    this.setState({ deleteContribution: null }, (e) => {
+      this.props.deleteContribution(
+        this.props.modulesManager,
+        contribution,
+        formatMessage(
+          this.props.intl,
+          "contribution",
+          "deleteContributionDialog.title"
         )
+      );
+    });
+  };
+
+  confirmDelete = (deleteContribution) => {
+    this.setState({ deleteContribution });
+  };
+
+  deletePremiumAction = (i) =>
+    !!i.validityTo || !!i.clientMutationId ? null : (
+      <Tooltip
+        title={formatMessage(
+          this.props.intl,
+          "contribution",
+          "deletePremium.tooltip"
+        )}
+      >
+        <IconButton onClick={() => this.confirmDelete(i)}>
+          <DeleteIcon />
+        </IconButton>
+      </Tooltip>
+    );
+
+  itemFormatters = () => {
+    const formatters = [
+      (c) =>
+        formatDateFromISO(
+          this.props.modulesManager,
+          this.props.intl,
+          c.payDate
+        ),
+      (c) => formatAmount(this.props.intl, c.amount),
+      (c) => (
+        <PublishedComponent
+          readOnly={true}
+          pubRef="contribution.PremiumPaymentTypePicker"
+          withLabel={false}
+          value={c.payType}
+        />
+      ),
+      (c) => c.receipt,
+      (c) =>
+        formatMessage(
+          this.props.intl,
+          "contribution",
+          `contribution.category.${
+            !!c.isPhotoFee ? "photoFee" : "contribution"
+          }`
+        ),
+
+      (c) => (
+        <Tooltip
+          title={formatMessage(
+            this.props.intl,
+            "contribution",
+            "contribution.openNewTab"
+          )}
+        >
+          <IconButton onClick={(e) => this.props.onDoubleClick(c, true)}>
+            {" "}
+            <TabIcon />
+          </IconButton>
+        </Tooltip>
+      ),
+    ];
+
+    if (!!this.props.rights.includes(RIGHT_CONTRIBUTION_DELETE)) {
+      formatters.push(this.deletePremiumAction);
     }
+    return formatters;
+  };
 
-    canFetchContributionDetails = () => {
-        if (this.state.searchInitiated === false && !!this.state.initialFitlers) {
-          this.onFiltersApplied(this.state.initialFitlers);
-        }
-      };
-    
-      scheduleCanFetchContributionDetails = () => {
-        if (this.debounceTimeout) {
-          clearTimeout(this.debounceTimeout);
-        }
-    
-        this.debounceTimeout = setTimeout(() => {
-          this.canFetchContributionDetails();
-        }, 100);
-      };
+  rowDisabled = (selection, i) => !!i.validityTo;
+  rowLocked = (selection, i) => !!i.clientMutationId;
+  onFiltersApplied = (filters) => {
+    this.setState({
+      searchInitiated: true,
+      filters, // Update the active filters
+    });
+  };
 
-    rowIdentifier = (r) => r.uuid
+  render() {
+    const {
+      intl,
+      contributions,
+      contributionsPageInfo,
+      fetchingContributions,
+      fetchedContributions,
+      errorContributions,
+      filterPaneContributionsKey,
+      cacheFiltersKey,
+      onDoubleClick,
+    } = this.props;
+    let count = contributionsPageInfo.totalCount;
+    const { searchInitiated } = this.state;
 
-    filtersToQueryParams = (state) => {
-        let prms = Object.keys(state.filters)
-            .filter(contrib => !!state.filters[contrib]['filter'])
-            .map(contrib => state.filters[contrib]['filter']);
-        prms.push(`first: ${state.pageSize}`);
-        if (!!state.afterCursor) {
-            prms.push(`after: "${state.afterCursor}"`)
-        }
-        if (!!state.beforeCursor) {
-            prms.push(`before: "${state.beforeCursor}"`)
-        }
-        if (!!state.orderBy) {
-            prms.push(`orderBy: ["${state.orderBy}"]`);
-        }
-        return prms;
-    }
-
-    headers = (filters) => {
-        var h = [
-            "contribution.payDate",
-            "contribution.amount",
-            "contribution.payType",
-            "contribution.receipt",
-            "contribution.category",
-            "contribution.openNewTabHead"
-        ]
-        return h;
-    }
-
-    sorts = (filters) => {
-        var results = [
-            ['payDate', true],
-            ['amount', true],
-            ['payType', true],
-            ['receipt', true],
-            ['isPhotoFee', true]
-        ];
-        return results;
-    }
-
-    deleteContribution = () => {
-        let contribution = this.state.deleteContribution;
-        this.setState(
-            { deleteContribution: null },
-            (e) => {
-                this.props.deleteContribution(
-                    this.props.modulesManager,
-                    contribution,
-                    formatMessage(this.props.intl, "contribution", "deleteContributionDialog.title"))
-            })
-    }
-
-    confirmDelete = deleteContribution => {
-        this.setState({ deleteContribution,})
-    }
-
-    deletePremiumAction = (i) =>
-        !!i.validityTo || !!i.clientMutationId ? null :
-            <Tooltip title={formatMessage(this.props.intl, "contribution", "deletePremium.tooltip")}>
-                <IconButton onClick={() => this.confirmDelete(i)}><DeleteIcon /></IconButton>
-            </Tooltip>
-
-    itemFormatters = () => {
-        const formatters =  [
-            c => formatDateFromISO(this.props.modulesManager, this.props.intl, c.payDate),
-            c => formatAmount(this.props.intl, c.amount),
-            c => <PublishedComponent
-                readOnly={true}
-                pubRef="contribution.PremiumPaymentTypePicker" withLabel={false} value={c.payType}
-            />,
-            c => c.receipt,
-            c => formatMessage(this.props.intl, "contribution", `contribution.category.${!!c.isPhotoFee ? "photoFee" : "contribution"}`),
-
-            c => (
-                <Tooltip title={formatMessage(this.props.intl, "contribution", "contribution.openNewTab")}>
-                    <IconButton onClick={e => this.props.onDoubleClick(c, true)} > <TabIcon /></IconButton >
-                </Tooltip>
-            )
-        ];
-
-        if (!!this.props.rights.includes(RIGHT_CONTRIBUTION_DELETE)) {
-            formatters.push(this.deletePremiumAction)
-        }
-        return formatters;
-    }
-
-    rowDisabled = (selection, i) => !!i.validityTo
-    rowLocked = (selection, i) => !!i.clientMutationId
-
-    onFiltersApplied = (filters) => {
-        this.setState({
-          searchInitiated: true,
-          filters, // Update the active filters
-        });
-      };
-    render() {
-        const { intl,
-            contributions, contributionsPageInfo, fetchingContributions, fetchedContributions, errorContributions,
-            filterPaneContributionsKey, cacheFiltersKey, onDoubleClick
-        } = this.props;
-        let count = contributionsPageInfo.totalCount;
-        const { searchInitiated } = this.state;
-        return (
-            <Fragment>
-                <DeleteContributionDialog
-                    contribution={this.state.deleteContribution}
-                    onConfirm={this.deleteContribution}
-                    onCancel={e => this.setState({ deleteContribution: null })} />
-                <Searcher
-                    module="contribution"
-                    cacheFiltersKey={cacheFiltersKey}
-                    FilterPane={ContributionFilter}
-                    filterPaneContributionsKey={filterPaneContributionsKey}
-                    items={contributions}
-                    itemsPageInfo={contributionsPageInfo}
-                    fetchingItems={fetchingContributions}
-                    fetchedItems={fetchedContributions}
-                    errorItems={errorContributions}
-                    contributionKey={FAMILY_SEARCHER_CONTRIBUTION_KEY}
-                    tableTitle={formatMessageWithValues(intl, "contribution", "contributionSummaries", { count })}
-                    rowsPerPageOptions={this.rowsPerPageOptions}
-                    defaultPageSize={this.defaultPageSize}
-                    fetch={this.isDefaultFetchContributionActivated == false  && searchInitiated ? this.fetch : this.isDefaultFetchContributionActivated == true ? this.fetch : () => {}}
-                    rowIdentifier={this.rowIdentifier}
-                    filtersToQueryParams={this.filtersToQueryParams}
-                    defaultOrderBy="-payDate"
-                    headers={this.headers}
-                    itemFormatters={this.itemFormatters}
-                    sorts={this.sorts}
-                    rowDisabled={this.rowDisabled}
-                    rowLocked={this.rowLocked}
-                    onDoubleClick={c => !c.clientMutationId && onDoubleClick(c)}
-                    reset={this.state.reset}
-                    onChangeFilters={this.onFiltersApplied}
-                />
-            </Fragment>
-        )
-    }
+    return (
+      <Fragment>
+        <DeleteContributionDialog
+          contribution={this.state.deleteContribution}
+          onConfirm={this.deleteContribution}
+          onCancel={(e) => this.setState({ deleteContribution: null })}
+        />
+        <Searcher
+          module="contribution"
+          cacheFiltersKey={cacheFiltersKey}
+          FilterPane={ContributionFilter}
+          filterPaneContributionsKey={filterPaneContributionsKey}
+          items={contributions}
+          itemsPageInfo={contributionsPageInfo}
+          fetchingItems={fetchingContributions}
+          fetchedItems={fetchedContributions}
+          errorItems={errorContributions}
+          contributionKey={FAMILY_SEARCHER_CONTRIBUTION_KEY}
+          tableTitle={formatMessageWithValues(
+            intl,
+            "contribution",
+            "contributionSummaries",
+            { count }
+          )}
+          rowsPerPageOptions={this.rowsPerPageOptions}
+          defaultPageSize={this.defaultPageSize}
+          fetch={this.isDefaultFetchContributionActivated == false  && searchInitiated ? this.fetch : this.isDefaultFetchContributionActivated == true ? this.fetch : () => {}}
+          rowIdentifier={this.rowIdentifier}
+          filtersToQueryParams={this.filtersToQueryParams}
+          defaultOrderBy="-payDate"
+          headers={this.headers}
+          itemFormatters={this.itemFormatters}
+          sorts={this.sorts}
+          rowDisabled={this.rowDisabled}
+          rowLocked={this.rowLocked}
+          onDoubleClick={(c) => !c.clientMutationId && onDoubleClick(c)}
+          reset={this.state.reset}
+          onChangeFilters={this.onFiltersApplied}
+        />
+      </Fragment>
+    );
+  }
 }
 
-const mapStateToProps = state => ({
-    rights: !!state.core && !!state.core.user && !!state.core.user.i_user ? state.core.user.i_user.rights : [],
-    contributions: state.contribution.contributions,
-    contributionsPageInfo: state.contribution.contributionsPageInfo,
-    fetchingContributions: state.contribution.fetchingContributions,
-    fetchedContributions: state.contribution.fetchedContributions,
-    errorContributions: state.contribution.errorContributions,
-    submittingMutation: state.contribution.submittingMutation,
-    mutation: state.contribution.mutation,
+const mapStateToProps = (state) => ({
+  rights:
+    !!state.core && !!state.core.user && !!state.core.user.i_user
+      ? state.core.user.i_user.rights
+      : [],
+  contributions: state.contribution.contributions,
+  contributionsPageInfo: state.contribution.contributionsPageInfo,
+  fetchingContributions: state.contribution.fetchingContributions,
+  fetchedContributions: state.contribution.fetchedContributions,
+  errorContributions: state.contribution.errorContributions,
+  submittingMutation: state.contribution.submittingMutation,
+  mutation: state.contribution.mutation,
 });
 
-
-const mapDispatchToProps = dispatch => {
-    return bindActionCreators(
-        { fetchContributionsSummaries, deleteContribution, journalize },
-        dispatch);
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators(
+    { fetchContributionsSummaries, deleteContribution, journalize },
+    dispatch
+  );
 };
 
-export default withModulesManager(connect(mapStateToProps, mapDispatchToProps)(injectIntl(ContributionSearcher)));
+export default withModulesManager(
+  connect(mapStateToProps, mapDispatchToProps)(injectIntl(ContributionSearcher))
+);

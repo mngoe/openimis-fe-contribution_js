@@ -21,6 +21,14 @@ class ContributionsPage extends Component {
         };
       }
 
+    constructor(props) {
+        super(props);
+        let defaultFilters = {};
+        this.state = {
+          defaultFilters,
+        };
+      }
+
     onDoubleClick = (c, newTab = false) => {
         historyPush(this.props.modulesManager, this.props.history, "contribution.contributionOverview", [c.uuid], newTab)
     }

@@ -1,6 +1,6 @@
 import React from "react";
 import { MonetizationOn } from "@material-ui/icons";
-import { FormattedMessage } from "@openimis/fe-core";
+import { FormattedMessage, decodeId } from "@openimis/fe-core";
 import ContributionsPage from "./pages/ContributionsPage";
 import ContributionPage from "./pages/ContributionPage";
 import ContributionOverviewPage from "./pages/ContributionOverviewPage";

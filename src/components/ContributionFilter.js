@@ -10,6 +10,7 @@ import {
     ControlledField,
     TextInput,
     formatMessage,
+    decodeId,
 } from "@openimis/fe-core";
 
 const styles = theme => ({
@@ -123,7 +124,7 @@ class ContributionFilter extends Component {
                                     {
                                         id: "payer",
                                         value: v,
-                                        filter: `payer_Id: "${v && v.id ? v.id : null}"`
+                                        filter: `payerId: "${v?.id ? decodeId(v.id) : null}"`
                                     }
                                 ])}
                             />

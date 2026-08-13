@@ -44,6 +44,7 @@ class PoliciesPremiumsOverview extends PagedDataHandler {
         super(props);
         this.rowsPerPageOptions = props.modulesManager.getConf("fe-contribution", "familyPremiumsOverview.rowsPerPageOptions", [2, 5, 10, 20]);
         this.defaultPageSize = props.modulesManager.getConf("fe-contribution", "familyPremiumsOverview.defaultPageSize", 2);
+        this.manualContributionDisabled = props.modulesManager.getConf("fe-contribution", "familyPremiumsOverview.manualContributionDisabled", true);
     }
 
     componentDidMount() {
@@ -215,7 +216,7 @@ class PoliciesPremiumsOverview extends PagedDataHandler {
                 tooltip: formatMessage(intl, "contribution", "reload.tooltip")
             }
         ];
-        if (!!!readOnly && canAdd) {
+        if (!readOnly && canAdd && !this.manualContributionDisabled) {
             actions.push(
                 {
                     button: <IconButton className={!policy ? classes.disabled : ""} onClick={!policy ? null : this.addNewPremium}><AddIcon /></IconButton>,

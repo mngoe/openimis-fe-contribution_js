@@ -13,6 +13,7 @@ import {
     decodeId,
 } from "@openimis/fe-core";
 
+
 const styles = theme => ({
     dialogTitle: theme.dialog.title,
     dialogContent: theme.dialog.content,
@@ -63,6 +64,19 @@ class ContributionFilter extends Component {
             showHistory: !state.showHistory
         }));
     }
+
+    onChangeDecimalFilter = (field) => (value) => {
+        const raw = String(value ?? "").replace(/\s/g, "").replace(",", ".");
+        if (!raw) {
+            this.debouncedOnChangeFilter([{ id: field, value: null, filter: null }]);
+            return;
+        }
+        const parsed = Number(raw);
+        const decimalValue = Number.isFinite(parsed) ? parsed.toFixed(2) : null;
+        this.debouncedOnChangeFilter([
+            { id: field, value: decimalValue, filter: decimalValue ? `${field}: "${decimalValue}"` : null }
+        ]);
+    };
 
     render() {
         const { classes, filters, onChangeFilters, intl } = this.props;
@@ -136,14 +150,7 @@ class ContributionFilter extends Component {
                                 <AmountInput
                                     module="contribution" label={`contribution.${a}`}
                                     value={(filters[a] && filters[a]['value'])}
-                                    onChange={v => this.debouncedOnChangeFilter([
-
-                                        {
-                                            id: a,
-                                            value: (!v ? null : v),
-                                            filter: !!v ? `${a}: ${v}` : null
-                                        }
-                                    ])}
+                                    onChange={this.onChangeDecimalFilter(a)}
                                 />
                             </Grid>
                         } />

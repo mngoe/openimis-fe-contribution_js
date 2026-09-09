@@ -13,6 +13,7 @@ import {
     decodeId,
 } from "@openimis/fe-core";
 
+
 const styles = theme => ({
     dialogTitle: theme.dialog.title,
     dialogContent: theme.dialog.content,

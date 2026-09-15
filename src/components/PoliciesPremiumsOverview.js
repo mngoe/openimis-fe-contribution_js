@@ -142,7 +142,7 @@ class PoliciesPremiumsOverview extends PagedDataHandler {
                 readOnly={true}
                 pubRef="payer.PayerPicker" withLabel={false} value={p.payer}
             />,
-            p => formatAmount(this.props.intl, p.amount),
+            p => formatAmount(this.props.modulesManager, this.props.intl, p.amount),
             p => <PublishedComponent
                 readOnly={true}
                 pubRef="contribution.PremiumPaymentTypePicker" withLabel={false} value={p.payType}

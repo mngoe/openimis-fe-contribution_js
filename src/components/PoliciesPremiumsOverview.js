@@ -227,7 +227,7 @@ class PoliciesPremiumsOverview extends PagedDataHandler {
             )
         }
 
-        return (
+        return !this.manualContributionDisabled ? (
             <>
             <DeleteContributionDialog
                     contribution={this.state.deleteContribution}
@@ -277,7 +277,7 @@ class PoliciesPremiumsOverview extends PagedDataHandler {
                 />
             </Paper>
             </>
-        )
+        ): <></>
     }
 }
 

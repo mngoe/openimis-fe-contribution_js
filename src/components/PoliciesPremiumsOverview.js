@@ -84,11 +84,15 @@ class PoliciesPremiumsOverview extends PagedDataHandler {
 
     queryPrms = () => {
         let prms = [`orderBy: "${this.state.orderBy}"`];
-        if (!!this.props.policy) {
+        if (!!this.props.policy?.policyUuid) {
             prms.push(`policyUuids: ${JSON.stringify([this.props.policy.policyUuid])}`);
             return prms;
         } else if (!!this.props.policies && !!this.props.policies.length) {
-            prms.push(`policyUuids: ${JSON.stringify((this.props.policies || []).map(p => p.policyUuid))}`);
+            const policyUuids = (this.props.policies || []).map(p => p?.policyUuid).filter(Boolean);
+            if (!policyUuids.length) {
+                return null;
+            }
+            prms.push(`policyUuids: ${JSON.stringify(policyUuids)}`);
             return prms;
         }
         return null;
